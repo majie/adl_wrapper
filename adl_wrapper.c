@@ -580,6 +580,17 @@ void Deinit_ADL_Procs(void)
 	FreeLibrary(gDll);
 }
 
+#else //#ifndef DIRECT_LINK_ADL
+
+int Init_ADL_Proces(void)
+{
+	return ADL_OK;
+}
+
+void Deinit_ADL_Procs(void)
+{
+}
+
 #endif //#ifndef DIRECT_LINK_ADL
 
 void* __stdcall Main_Malloc_Callback(int n)

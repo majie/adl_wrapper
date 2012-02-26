@@ -36,10 +36,8 @@
 extern "C" {
 #endif
 
-#ifndef DIRECT_LINK_ADL
 int Init_ADL_Procs(void);
 void Deinit_ADL_Procs(void);
-#endif
 
 void* __stdcall Main_Malloc_Callback(int);
 
