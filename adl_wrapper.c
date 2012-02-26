@@ -1,3 +1,8 @@
+/* Copyright (c) 2012 The adl_wrapper Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license
+ * that can be found in the LICENSE.txt file.
+ */
+
 #if defined (_WIN32) || defined (_WIN64)
 #include <windows.h>
 #include <tchar.h>
@@ -11,6 +16,7 @@
 #include "adl_wrapper.h"
 #undef INCLUDE_IN_ADL_WRAPPER_C
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <adl_sdk.h>
 
@@ -391,7 +397,7 @@ int Init_ADL_Procs(void)
 	for (i = 0; i < Proc_Count; i++) {
 		proc = GetProcAddress(gDll, gProcNames[i]);
 		if (proc == NULL) {
-			return ADL_ERR;
+			printf("%s\n", gProcNames[i]);
 		}
 		procEntries[i] = proc;
 	}
