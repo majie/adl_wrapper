@@ -12,9 +12,14 @@ int main(int argc, char** argv)
 	int err;
 	int count = 0;
 
+	if (Init_ADL_Procs() != ADL_OK) {
+		puts("error Init_ADL_Procs()");
+		return 1;
+	}
+
 	err = ADL_Main_Control_Create(Main_Malloc_Callback, 1);
 	if (err != ADL_OK) {
-		puts("error");
+		puts("error ADL_Main_Control_Create()");
 		return 1;
 	}
 
@@ -23,6 +28,7 @@ int main(int argc, char** argv)
 	printf("count: %d\n", count);
 
 	ADL_Main_Control_Destroy();
+	Deinit_ADL_Procs();
 	return 0;
 }
 

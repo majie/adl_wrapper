@@ -8,6 +8,7 @@
 #include <tchar.h>
 #elif defined (__linux__)
 #include <unistd.h>
+#include <dlfcn.h>
 #else
 #error Unknown OS platform
 #endif
@@ -22,10 +23,13 @@
 
 #ifndef DIRECT_LINK_ADL
 
+#ifdef __linux__
+typedef void* HMODULE;
+#endif
 static HMODULE gDll;
 
 #define PREFIX_LENGTH (sizeof("Index_Of_") - 1)
-static enum Indices {
+enum Indices {
 	Index_Of_ADL_Main_Control_Create = 0,
 	Index_Of_ADL_Main_Control_Refresh,
 	Index_Of_ADL_Main_Control_Destroy,
@@ -389,16 +393,34 @@ int Init_ADL_Procs(void)
 	void* proc;
 	int i;
 
+#if defined (_WIN32) || defined (_WIN64)
 	gDll = LoadLibrary(_T("atiadlxx.dll"));
+#elif defined (__linux__)
+	gDll = dlopen("libatiadlxx.so", RTLD_LAZY);
+#else
+#error unknown os platform
+#endif
 	if (gDll == NULL) {
 		return ADL_ERR;
 	}
 	
 	for (i = 0; i < Proc_Count; i++) {
+#if defined (_WIN32) || defined (_WIN64)
 		proc = GetProcAddress(gDll, gProcNames[i]);
 		if (proc == NULL) {
+			// symbol not found
 			printf("%s\n", gProcNames[i]);
 		}
+#elif defined (__linux__)
+		dlerror();
+		proc = dlsym(gDll, gProcNames[i]);
+		if (dlerror() != NULL) {
+			// symbol not found
+			printf("%s\n", gProcNames[i]);
+		}
+#else
+#error unknown os platform
+#endif
 		procEntries[i] = proc;
 	}
 
@@ -577,7 +599,13 @@ int Init_ADL_Procs(void)
 
 void Deinit_ADL_Procs(void)
 {
+#if defined (_WIN32) || defined (_WIN64)
 	FreeLibrary(gDll);
+#elif defined (__linux__)
+	dlclose(gDll);
+#else
+#error unknown os platform
+#endif
 }
 
 #else //#ifndef DIRECT_LINK_ADL
