@@ -19,6 +19,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+
 #include <adl_sdk.h>
 
 #ifndef DIRECT_LINK_ADL
@@ -387,6 +389,29 @@ static const char* const gProcNames[Proc_Count] = {
 
 #define ASSIGN_PROC(name, type, pool) (name = (type)(pool[Index_Of_##name]))
 
+// For not implemented procedures in the library
+static void Null_Procedure()
+{
+#if defined (_WIN32) || defined (_WIN64)
+	_putts(_T("Calling a not implemented procedure.\n")
+		_T("Check the call stack for more information.\n")
+		_T("Terminating..."));
+	MessageBox(NULL, _T("Calling a not implemented procedure.\n")
+		_T("Check the call stack for more information.\n")
+		_T("Terminating..."),
+		_T("adl_wrapper error"), MB_OK);
+#elif defined (__linux__)
+	puts("Calling a not implemented procedure.\n"
+		"Use a debugger to check the call stack for more information.\n"
+		"Terminating...");
+#else
+#error unknown os platform
+#endif
+
+	assert(0);
+	exit(EXIT_FAILURE);
+}
+
 int Init_ADL_Procs(void)
 {
 	void* procEntries[Proc_Count];
@@ -409,14 +434,14 @@ int Init_ADL_Procs(void)
 		proc = GetProcAddress(gDll, gProcNames[i]);
 		if (proc == NULL) {
 			// symbol not found
-			printf("%s\n", gProcNames[i]);
+			proc = Null_Procedure;
 		}
 #elif defined (__linux__)
 		dlerror();
 		proc = dlsym(gDll, gProcNames[i]);
 		if (dlerror() != NULL) {
 			// symbol not found
-			printf("%s\n", gProcNames[i]);
+			proc = Null_Procedure;
 		}
 #else
 #error unknown os platform
